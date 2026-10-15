@@ -8,17 +8,23 @@ set(SOURCES
     Src/Main.cpp
 )
 
+
+
+add_subdirectory(Inc/Extern/u8g2-2.37.1)
+
+
+
 if(WIN32)
-    add_subdirectory(Inc/pybind11-3.1.0)
+    add_subdirectory(Inc/Extern/pybind11-3.1.0)
 
     pybind11_add_module(Display MODULE ${SOURCES})
 
     target_include_directories(Display PRIVATE Inc)
 
 elseif(STM32H7A3xx)
-    add_library(Display STATIC &{SOURCES})
+    add_library(Display STATIC ${SOURCES})
     
     target_include_directories(Display PUBLIC Inc)
 endif()
 
-
+target_link_libraries(Display PRIVATE u8g2)
