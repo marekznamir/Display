@@ -25,6 +25,8 @@ elseif(STM32H7A3xx)
     add_library(Display STATIC ${SOURCES})
     
     target_include_directories(Display PUBLIC Inc)
+    
+    target_link_libraries(Display PRIVATE stm32cubemx)
 endif()
 
 target_link_libraries(Display PRIVATE u8g2)
