@@ -5,14 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCES
-    Src/Main.cpp
+    Src/main.cpp
+    Src/DisplayController.cpp
+    Src/Callbacks.cpp
 )
 
-
-
 add_subdirectory(Inc/Extern/u8g2-2.37.1)
-
-
 
 if(WIN32)
     add_subdirectory(Inc/Extern/pybind11-3.1.0)
@@ -29,4 +27,4 @@ elseif(STM32H7A3xx)
     target_link_libraries(Display PRIVATE stm32cubemx)
 endif()
 
-target_link_libraries(Display PRIVATE u8g2)
+target_link_libraries(Display PUBLIC u8g2)
