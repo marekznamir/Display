@@ -5,11 +5,18 @@
 
 u8g2_t u8g2;
 
-DisplayController::DisplayController() {
+DisplayController::DisplayController() 
+{
     // Constructor implementation
 }
 
-void DisplayController::init() {
+DisplayController::~DisplayController()
+{
+    
+}
+
+void DisplayController::init() 
+{
     #ifdef _WIN32
         // u8g2_Setup_uc1698_240x160(
         //     &u8g2,
@@ -23,8 +30,26 @@ void DisplayController::init() {
         // );
     #endif
 
+    #ifdef STM32H7A3xx
+        u8g2_Setup_uc1698_240x160_f(
+            &u8g2,
+            U8G2_R0,
+            u8x8_byte_4wire_hw_spi,
+            u8x8_gpio_and_delay_stm32
+        );
+
+    #endif
+
     u8g2_InitDisplay(&u8g2);
     u8g2_SetPowerSave(&u8g2, 0);
     u8g2_SetContrast(&u8g2, 50);
     u8g2_ClearBuffer(&u8g2);
+}
+
+void DisplayController::draw() 
+{
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_8x13B_mf);
+    u8g2_DrawStr(&u8g2, 30, 30, "const char *str");
+    u8g2_SendBuffer(&u8g2);
 }
