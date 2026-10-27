@@ -1,6 +1,7 @@
 #include "DisplayController.hpp"
 #include "Callbacks.hpp"
 
+
 #include <u8g2.h>
 
 u8g2_t u8g2;
@@ -17,6 +18,8 @@ DisplayController::~DisplayController()
 
 void DisplayController::init() 
 {
+    setScreen<TerminalScreen>(terminal0);
+
     #ifdef _WIN32
         // u8g2_Setup_uc1698_240x160(
         //     &u8g2,
@@ -48,8 +51,10 @@ void DisplayController::init()
 
 void DisplayController::draw() 
 {
-    u8g2_ClearBuffer(&u8g2);
-    u8g2_SetFont(&u8g2, u8g2_font_8x13B_mf);
-    u8g2_DrawStr(&u8g2, 30, 30, "const char *str");
-    u8g2_SendBuffer(&u8g2);
+    std::visit([](auto& screen) {
+        using T = std::decay_t<decltype(screen)>;
+        if constexpr (!std::is_same_v<T, std::monostate>) {
+            screen.draw();
+        }
+    }, currentScreen);
 }
