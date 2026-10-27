@@ -4,10 +4,13 @@ project(Display VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+file(GLOB_RECURSE DISPLAY_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/*.c
+)
+
 set(SOURCES
-    Src/main.cpp
-    Src/DisplayController.cpp
-    Src/Callbacks.cpp
+    ${DISPLAY_SOURCES}
 )
 
 add_subdirectory(Inc/Extern/u8g2-2.37.1)
