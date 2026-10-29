@@ -54,7 +54,6 @@ void DisplayController::draw()
     std::visit([](auto&& screen){
         screen.draw();
     }, currentScreen);
-
 }
 
 template<typename Screen, typename... Args>
