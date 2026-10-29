@@ -25,4 +25,7 @@ namespace Command {
     };
 
     void write(char* buffer, std::size_t size, Terminal& terminalInstance);
+
+    template<typename Arg>
+    void write(Arg& arg, Terminal& terminalInstance);
 };
