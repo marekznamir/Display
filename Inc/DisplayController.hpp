@@ -3,6 +3,7 @@
 #include <variant>
 #include "Terminal/Terminal.hpp"
 #include "Screens/TerminalScreen.hpp"
+#include "Screens/MainScreen.hpp"
 
 namespace cmd = Command;
 
@@ -10,7 +11,7 @@ extern cmd::Terminal terminal0;
 
 class DisplayController {
 private:
-    std::variant<std::monostate, TerminalScreen> currentScreen;
+    std::variant<MainScreen, TerminalScreen> currentScreen;
 public:
     DisplayController();
     ~DisplayController();
@@ -19,8 +20,6 @@ public:
 
     void draw();
 
-    template <typename ScreenType, typename... Args>
-    void setScreen(Args&&... args) {
-        currentScreen.emplace<ScreenType>(std::forward<Args>(args)...);
-    }
+    template<typename screen, typename... Args>
+    void setScreen(Args&&... args);
 };

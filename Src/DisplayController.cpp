@@ -51,10 +51,14 @@ void DisplayController::init()
 
 void DisplayController::draw() 
 {
-    std::visit([](auto& screen) {
-        using T = std::decay_t<decltype(screen)>;
-        if constexpr (!std::is_same_v<T, std::monostate>) {
-            screen.draw();
-        }
+    std::visit([](auto&& screen){
+        screen.draw();
     }, currentScreen);
+
+}
+
+template<typename Screen, typename... Args>
+void DisplayController::setScreen(Args&&... args)
+{
+    currentScreen.emplace<Screen>(std::forward<Args>(args)...);
 }
