@@ -65,6 +65,7 @@ PYBIND11_MODULE(Display, m, py::mod_gil_not_used()) {
     m.def("onButtonPressed", &onButtonPressed, py::arg("button"), "A function that handles button presses");
 
     py::class_<DisplayController>(m, "DisplayController")
+        .def(py::init<>())
         .def("init", &DisplayController::init)
         .def("draw", &DisplayController::draw);
 }

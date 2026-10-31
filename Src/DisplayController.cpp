@@ -5,9 +5,11 @@
 u8g2_t u8g2;
 
 #ifdef _WIN32
+
 #include "Terminal/Terminal.hpp"
 namespace cmd = Command;
 cmd::Terminal terminal0;
+
 #endif
 
 DisplayController::DisplayController() 
