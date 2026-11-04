@@ -43,6 +43,11 @@ def parse_args():
             parser.error(f"Directory does not exist: {pydDir}")
         if pydDir not in sys.path:
             sys.path.append(pydDir)
+        if hasattr(os, "add_dll_directory"):
+            os.add_dll_directory(pydDir)
+
+    if hasattr(os, "add_dll_directory") and os.path.isdir(r"C:\msys64\ucrt64\bin"):
+        os.add_dll_directory(r"C:\msys64\ucrt64\bin")
 
     if args.scale < 1:
         parser.error("--scale must be >= 1")
@@ -125,6 +130,7 @@ class Emulator:
 
     def refresh(self):
         try:
+            self.Display.printRandomText()
             self.controller.draw()
             ppm = buffer_to_ppm(self.Display.getBuffer())
             photo = tk.PhotoImage(data=ppm, format="PPM")

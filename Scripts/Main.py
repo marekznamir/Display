@@ -16,8 +16,17 @@ for pydDir in args.pydDirs:
         parser.error(f"Directory does not exist: {pydDir}")
     if pydDir not in sys.path:
         sys.path.append(pydDir)
+    if hasattr(os, "add_dll_directory"):
+        os.add_dll_directory(pydDir)
+
+if hasattr(os, "add_dll_directory") and os.path.isdir(r"C:\msys64\ucrt64\bin"):
+    os.add_dll_directory(r"C:\msys64\ucrt64\bin")
 
 import Display
 
-temp = Display.Test()
-print(temp.getA())
+controller = Display.DisplayController()
+controller.init()
+
+while True:
+    Display.printRandomText()
+    controller.draw()

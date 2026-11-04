@@ -2,11 +2,44 @@
 
 #include "DisplayController.hpp"
 #include "u8g2.h"
+#include <array>
+#include <chrono>
+#include <random>
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 
 extern u8g2_t u8g2;
+
+void printRandomText()
+{
+    static constexpr std::array<const char*, 10> templates = {
+        "System OK: %d\n",
+        "Temp: %d C\n",
+        "Load: %d%%\n",
+        "Tick: %v\n",
+        "Battery: %d%%\n",
+        "Mem free: %d KB\n",
+        "FPS: %d\n",
+        "Ping: %d ms\n",
+        "Signal: -%d dBm\n",
+        "Errors: %d\n"
+    };
+
+    static auto lastTime = std::chrono::steady_clock::now();
+    const auto now = std::chrono::steady_clock::now();
+
+    if (std::chrono::duration_cast<std::chrono::seconds>(now - lastTime).count() >= 1)
+    {
+        lastTime = now;
+
+        static std::mt19937 rng(std::random_device{}());
+        std::uniform_int_distribution<std::size_t> tmplDist(0, templates.size() - 1);
+        std::uniform_int_distribution<int> valDist(0, 100);
+
+        terminal0.printf(templates[tmplDist(rng)], valDist(rng));
+    }
+}
 
 py::bytes getBuffer()
 {
@@ -53,6 +86,7 @@ PYBIND11_MODULE(Display, m, py::mod_gil_not_used()) {
     m.doc() = "Display module"; 
 
     m.def("getBuffer", &getBuffer, py::return_value_policy::reference, "A function that returns the buffer pointer");
+    m.def("printRandomText", &printRandomText, "Prints a random text to terminal every second");
 
     py::enum_<Button>(m, "Button")
         .value("UP", Button::UP)
