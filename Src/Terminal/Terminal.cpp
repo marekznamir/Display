@@ -6,7 +6,6 @@
 #include <system_error>
 #include <cstdint>
 
-
 namespace Command {
 
     Terminal::Terminal()
@@ -122,6 +121,7 @@ namespace Command {
                     break;
                 default:
                     memcpy(newBuf, "Wrong format %_ <--\n", 21);
+                    write(newBuf);
                     return;
             }
 
@@ -138,6 +138,9 @@ namespace Command {
         *newBufPos = '\0';
         write(newBuf);
     }
+
+    template void Terminal::printf<int>(const char*, int);
+    template void Terminal::printf<float>(const char*, float);
 
     const std::tuple<const char(*)[LINE_LEN], std::size_t, std::size_t> Terminal::data()
     {

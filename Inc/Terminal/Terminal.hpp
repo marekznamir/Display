@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstddef>
+#include <cstring>
+#include <charconv>
+#include <string>
 #include <tuple>
 
 namespace Command {
