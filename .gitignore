@@ -1,5 +1,6 @@
 /out
 CMakePresets.json
 Scripts/run.bat
+build/
 *.pyc
 /__pycache__
