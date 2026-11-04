@@ -2,7 +2,6 @@
 #include <cstddef>
 #include <iterator>
 
-#include "DisplayController.hpp"
 #include "u8g2.h"
 
 TerminalScreen::TerminalScreen(cmd::Terminal &terminal) : terminalInstance(terminal)
@@ -33,7 +32,7 @@ void TerminalScreen::draw()
     {
         std::size_t index = (startIndex + i) & cmd::FINAL_INDEX_MASK;
         u8g2_uint_t y = static_cast<u8g2_uint_t>((i + 1) * LINE_HEIGHT);
-        u8g2_DrawStr(&u8g2, 0, y, buff[index].data);
+        u8g2_DrawStr(&u8g2, 0, y, buff[index]);
     }
 
     u8g2_SendBuffer(&u8g2);

@@ -13,80 +13,133 @@ namespace Command {
     {
         for(auto& line : buff)
         {
-            std::memset(line.data, 0, LINE_LEN);
+            std::memset(line, 0, LINE_LEN);
         }
     }
 
-    void write(char* buffer, std::size_t size, Terminal& terminalInstance)
+    void Terminal::write(char* buffer)
     {
-        auto& lineCount = terminalInstance.lineCount;
-        auto& newestLineIndex = terminalInstance.newestLineIndex;
-        auto& data = terminalInstance.buff[newestLineIndex].data;
+        constexpr const char* delim = "\n";
+        constexpr const std::size_t DELIM_LEN = std::char_traits<char>::length(delim);
+        auto res = strstr(buffer, delim);
 
-        if(lineCount < BUFF_SIZE)
+        while(res != NULL)
         {
-            lineCount++;
-        }
-
-        std::size_t i = 0;
-        for(; i < size; i++)
-        {
-            if(buffer[i] == '\n')
+            std::size_t len = static_cast<std::size_t>(res - buffer);
+            if(len >= LINE_LEN)
             {
-                // Close current line and continue with the rest of the text in a new one
-                data[i] = '\0';
-                newestLineIndex = (newestLineIndex + 1) & FINAL_INDEX_MASK;
+                len = LINE_LEN - 1;
+            }
+            memcpy(buff[newestLineIndex], buffer, len);
+            buff[newestLineIndex][len] = '\0';
 
-                if((i + 1 < size) && (buffer[i + 1] != '\0'))
+            newestLineIndex = (newestLineIndex + 1) & FINAL_INDEX_MASK;
+            if(lineCount < BUFF_SIZE)
+            {
+                lineCount++;
+            }
+
+            buffer = res + DELIM_LEN;
+            res = strstr(buffer, delim);
+        }
+    }
+
+    template<typename... Args>
+    void Terminal::printf(const char* buf, Args... args)
+    {
+        constexpr std::size_t MAX_ARGS_SIZE = 10;
+        char charArgs[MAX_ARGS_SIZE][LINE_LEN];
+        std::size_t idx = 0;
+        (
+            [&] {
+                if (idx < MAX_ARGS_SIZE)
                 {
-                    write(&buffer[i + 1], (size - i - 1), terminalInstance);
+                    auto [ptr, ec] = std::to_chars(charArgs[idx], charArgs[idx] + LINE_LEN - 1, args);
+                    *ptr = '\0';
+                    idx++;
                 }
-                return;
-            }
-            else if(buffer[i] == '\0')
+            }(),
+            ...
+        );
+
+        char newBuf[LINE_LEN];
+
+        constexpr const char* delim = "%";
+        constexpr const std::size_t DELIM_LEN = std::char_traits<char>::length(delim);
+        auto res = strstr(buf, delim);
+
+        char* newBufPos = newBuf;
+        char* const newBufEnd = newBuf + LINE_LEN - 1;
+
+        std::size_t argInsertIdx = 0;
+        while (res != NULL)
+        {
+            auto next = res + 1;
+
+            std::size_t len = static_cast<std::size_t>(res - buf);
+            if (newBufPos + len > newBufEnd)
             {
-                break;
+                len = static_cast<std::size_t>(newBufEnd - newBufPos);
             }
-            else if(i == LINE_LEN - 1)
+            memcpy(newBufPos, buf, len);
+            newBufPos += len;
+            *newBufPos = '\0';
+
+            switch (*next)
             {
-                // Line full - wrap the remaining text into the next line
-                data[i] = '\0';
-                newestLineIndex = (newestLineIndex + 1) & FINAL_INDEX_MASK;
-                write(&buffer[i], (size - i), terminalInstance);
-                return;
+                case 'd':
+                [[fallthrough]];
+                case 'f':
+                [[fallthrough]];
+                case 'v': // v as in value
+                {
+                    if (argInsertIdx < idx)
+                    {
+                        auto argLen = strlen(charArgs[argInsertIdx]);
+                        if ((newBufPos + argLen) <= newBufEnd)
+                        {
+                            memcpy(newBufPos, charArgs[argInsertIdx], argLen);
+                            newBufPos += argLen;
+                            *newBufPos = '\0';
+                            argInsertIdx++;
+                        }
+                    }
+                    buf = (next + 1);
+                    break;
+                }
+                case '\0':
+                    *newBufPos = '\0';
+                    buf = next;
+                    break;
+                case '%':
+                    if (newBufPos + 1 <= newBufEnd)
+                    {
+                        *newBufPos = '%';
+                        newBufPos++;
+                        *newBufPos = '\0';
+                    }
+                    buf = (next + 1);
+                    break;
+                default:
+                    memcpy(newBuf, "Wrong format %_ <--\n", 21);
+                    return;
             }
-            else
-            {
-                data[i] = buffer[i];
-            }
+
+            res = strstr(buf, delim);
         }
-        data[i] = '\0';
-        newestLineIndex = (newestLineIndex + 1) & FINAL_INDEX_MASK;
+
+        std::size_t remLen = strlen(buf);
+        if (newBufPos + remLen > newBufEnd)
+        {
+            remLen = static_cast<std::size_t>(newBufEnd - newBufPos);
+        }
+        memcpy(newBufPos, buf, remLen);
+        newBufPos += remLen;
+        *newBufPos = '\0';
+        write(newBuf);
     }
 
-    template<typename Arg>
-    void write(Arg& arg, Terminal& terminalInstance)
-    {
-        char buf[LINE_LEN]{};
-        std::to_chars_result result = std::to_chars(buf, buf + LINE_LEN, arg);
-
-        if (result.ec != std::errc())
-        {
-            char err[] = "ERR";
-            write(err, sizeof(err) - 1, terminalInstance);
-        }
-        else
-        {
-            write(buf, static_cast<std::size_t>(result.ptr - buf), terminalInstance);
-        }
-    }
-
-    template void write<uint8_t>(uint8_t&, Terminal&);
-    template void write<uint16_t>(uint16_t&, Terminal&);
-    template void write<uint32_t>(uint32_t&, Terminal&);
-    template void write<uint64_t>(uint64_t&, Terminal&);
-
-    const std::tuple<Line*, std::size_t, std::size_t> Terminal::data()
+    const std::tuple<const char(*)[LINE_LEN], std::size_t, std::size_t> Terminal::data()
     {
         return { buff, newestLineIndex, lineCount };
     }
