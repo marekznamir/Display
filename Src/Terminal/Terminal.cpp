@@ -145,6 +145,9 @@ namespace Command {
         {
             std::memset(line, 0, LINE_LEN);
         }
+
+        lineCount = 0;
+        newestLineIndex = 0;
     }
 
     template void Terminal::printf<int>(const char*, int);
