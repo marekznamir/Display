@@ -25,6 +25,8 @@ namespace Command {
         template<typename... Args>
         void printf(const char* buf, Args... args);
 
+        void clear();
+
         const std::tuple<const char(*)[LINE_LEN], std::size_t, std::size_t> data();
     };
 }

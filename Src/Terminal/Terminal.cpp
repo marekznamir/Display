@@ -139,8 +139,19 @@ namespace Command {
         write(newBuf);
     }
 
+    void Terminal::clear()
+    {
+        for(auto& line : buff)
+        {
+            std::memset(line, 0, LINE_LEN);
+        }
+    }
+
     template void Terminal::printf<int>(const char*, int);
     template void Terminal::printf<float>(const char*, float);
+    template void Terminal::printf<int32_t>(const char*, int32_t);
+    template void Terminal::printf<int32_t>(const char*, int32_t, int32_t);
+    template void Terminal::printf<uint8_t>(const char*, uint8_t, uint8_t);
 
     const std::tuple<const char(*)[LINE_LEN], std::size_t, std::size_t> Terminal::data()
     {
